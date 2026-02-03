@@ -1,13 +1,13 @@
 {
-    "name": "laravel-notification-channels/:package_name",
-    "description": ":package_description",
-    "homepage": "https://github.com/laravel-notification-channels/:package_name",
+    "name": "betterworld/mailchimp-notification-channel",
+    "description": "Custom Mailchimp Channel for Laravel Notification",
+    "homepage": "https://github.com/betterworldcollective/mailchimp-notification-channel",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": ":author_email",
-            "homepage": ":author_website",
+            "name": "Kristher Vidal",
+            "email": "kristher@betterworld.org",
+            "homepage": "https://github.com/kristher1619",
             "role": "Developer"
         }
     ],
@@ -22,12 +22,12 @@
     },
     "autoload": {
         "psr-4": {
-            "NotificationChannels\\:channel_namespace\\": "src"
+            "NotificationChannels\\Mailchimp\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "NotificationChannels\\:channel_namespace\\Test\\": "tests"
+            "NotificationChannels\\Mailchimp\\Test\\": "tests"
         }
     },
     "scripts": {
