@@ -2,6 +2,7 @@
 
 namespace NotificationChannels\Mailchimp;
 
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Mailchimp\Exceptions\CouldNotSendNotification;
 
@@ -30,8 +31,12 @@ class MailchimpChannel
 
         $response = $this->mailchimp->sendMessage($message);
 
-        if (isset($response[0]['status']) && $response[0]['status'] === 'rejected') {
+        if($response instanceof ClientException){
             throw CouldNotSendNotification::serviceRespondedWithAnError($response);
+        }
+
+        if (isset($response[0]['status']) && $response[0]['status'] === 'rejected') {
+            throw CouldNotSendNotification::emailWasRejected($response);
         }
 
         return $response;

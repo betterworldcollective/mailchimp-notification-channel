@@ -8,10 +8,10 @@ use NotificationChannels\Mailchimp\Data\Sender;
 class MailchimpMessage
 {
     private string $templateName;
-    private string $subject;
+    private ?string $subject = null;
     private array $mergeTags = [];
     private Recipient $to;
-    private Sender $from;
+    private ?Sender $from = null;
     private bool $useHandleBars = false;
 
     public function getTemplateName(): string
@@ -25,7 +25,7 @@ class MailchimpMessage
         return $this;
     }
 
-    public function getSubject(): string
+    public function getSubject(): ?string
     {
         return $this->subject;
     }
@@ -65,7 +65,7 @@ class MailchimpMessage
         $message = [
             'to' => [$this->to->toArray()],
             'subject' => $this->getSubject(),
-            ...$this->from->toArray(),
+            ...$this->from?->toArray() ??[],
         ];
 
         if (!empty($this->mergeTags)) {

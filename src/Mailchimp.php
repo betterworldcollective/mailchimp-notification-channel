@@ -10,7 +10,7 @@ class Mailchimp
     {
     }
 
-    public function sendMessage(MailchimpMessage $message): array
+    public function sendMessage(MailchimpMessage $message): mixed
     {
         return $this->mailchimpClient->messages->sendTemplate($message->getMessageBody());
     }
