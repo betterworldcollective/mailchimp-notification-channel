@@ -20,7 +20,7 @@ class MailchimpTest extends TestCase
             'template_name' => 'test-template',
             'template_content' => [['name' => '', 'content' => '']],
             'message' => [
-                'to' => [['email' => 'john@example.com', 'name' => 'John']],
+                'to' => [['email' => 'john@example.com', 'name' => 'John', 'type' => 'to']],
                 'subject' => 'Test Subject',
                 'from_email' => 'sender@example.com',
                 'from_name' => 'Sender',
@@ -28,7 +28,7 @@ class MailchimpTest extends TestCase
         ];
 
         $expectedResponse = [
-            [
+            (object) [
                 'email' => 'john@example.com',
                 'status' => 'sent',
                 '_id' => 'abc123',
@@ -68,7 +68,7 @@ class MailchimpTest extends TestCase
                     && $body['message']['merge_vars'][0]['rcpt'] === 'john@example.com'
                     && count($body['message']['merge_vars'][0]['vars']) === 2;
             }))
-            ->andReturn([['status' => 'sent']]);
+            ->andReturn([(object) ['status' => 'sent']]);
 
         $client = Mockery::mock(ApiClient::class);
         $client->messages = $messages;
@@ -96,7 +96,7 @@ class MailchimpTest extends TestCase
                 return isset($body['message']['merge_language'])
                     && $body['message']['merge_language'] === 'handlebars';
             }))
-            ->andReturn([['status' => 'sent']]);
+            ->andReturn([(object) ['status' => 'sent']]);
 
         $client = Mockery::mock(ApiClient::class);
         $client->messages = $messages;

@@ -2,6 +2,7 @@
 
 namespace NotificationChannels\Mailchimp\Test;
 
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Notifications\Notification;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -16,13 +17,15 @@ class MailchimpChannelTest extends TestCase
     use MockeryPHPUnitIntegration;
 
     private Mailchimp|Mockery\MockInterface $mailchimp;
+    private Dispatcher|Mockery\MockInterface $events;
     private MailchimpChannel $channel;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->mailchimp = Mockery::mock(Mailchimp::class);
-        $this->channel = new MailchimpChannel($this->mailchimp);
+        $this->events = Mockery::mock(Dispatcher::class);
+        $this->channel = new MailchimpChannel($this->mailchimp, $this->events);
     }
 
     /** @test */
@@ -62,28 +65,24 @@ class MailchimpChannelTest extends TestCase
     }
 
     /** @test */
-    public function it_throws_exception_when_message_is_rejected(): void
+    public function it_dispatches_failed_event_when_exception_is_thrown(): void
     {
         $notifiable = new TestNotifiable();
         $notification = new TestNotification();
 
-        $rejectedResponse = [
-            [
-                'email' => 'test@example.com',
-                'status' => 'rejected',
-                'reject_reason' => 'hard-bounce',
-            ],
-        ];
-
         $this->mailchimp
             ->shouldReceive('sendMessage')
             ->once()
-            ->andReturn($rejectedResponse);
+            ->andThrow(new CouldNotSendNotification("Mailchimp responded with status 'rejected' for 'test@example.com': hard-bounce"));
 
-        $this->expectException(CouldNotSendNotification::class);
-        $this->expectExceptionMessage("Mailchimp responded with status 'rejected' for 'test@example.com': hard-bounce");
+        $this->events
+            ->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::type(\Illuminate\Notifications\Events\NotificationFailed::class));
 
-        $this->channel->send($notifiable, $notification);
+        $response = $this->channel->send($notifiable, $notification);
+
+        $this->assertNull($response);
     }
 
     /** @test */

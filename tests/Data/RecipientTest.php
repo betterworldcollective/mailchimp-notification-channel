@@ -33,6 +33,7 @@ class RecipientTest extends TestCase
         $this->assertEquals([
             'email' => 'john@example.com',
             'name' => 'John Doe',
+            'type' => 'to',
         ], $recipient->toArray());
     }
 
@@ -43,6 +44,7 @@ class RecipientTest extends TestCase
 
         $this->assertEquals([
             'email' => 'john@example.com',
+            'type' => 'to',
         ], $recipient->toArray());
     }
 
@@ -53,5 +55,6 @@ class RecipientTest extends TestCase
         $array = $recipient->toArray();
 
         $this->assertArrayNotHasKey('name', $array);
+        $this->assertArrayHasKey('type', $array);
     }
 }

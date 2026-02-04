@@ -132,7 +132,7 @@ class MailchimpMessageTest extends TestCase
         $this->assertEquals([['name' => '', 'content' => '']], $body['template_content']);
 
         $message = $body['message'];
-        $this->assertEquals([['email' => 'john@example.com', 'name' => 'John Doe']], $message['to']);
+        $this->assertEquals([['email' => 'john@example.com', 'name' => 'John Doe', 'type' => 'to']], $message['to']);
         $this->assertEquals('Welcome!', $message['subject']);
         $this->assertEquals('hello@myapp.com', $message['from_email']);
         $this->assertEquals('My App', $message['from_name']);
