@@ -10,7 +10,7 @@ class MailchimpMessage
     private string $templateName;
     private ?string $subject = null;
     private array $mergeTags = [];
-    private Recipient $to;
+    private ?Recipient $to = null;
     private ?Sender $from = null;
     private bool $useHandleBars = false;
 
@@ -99,12 +99,12 @@ class MailchimpMessage
     /**
      * @return \NotificationChannels\Mailchimp\Data\Recipient
      */
-    public function getTo(): Recipient
+    public function getTo(): ?Recipient
     {
         return $this->to;
     }
 
-    public function to(string $email, ?string $name): MailchimpMessage
+    public function to(string $email, ?string $name=null): MailchimpMessage
     {
         $this->to = new Recipient($email, $name);
 

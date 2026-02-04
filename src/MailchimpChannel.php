@@ -2,23 +2,24 @@
 
 namespace NotificationChannels\Mailchimp;
 
-use GuzzleHttp\Exception\ClientException;
+use Exception;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\Mailchimp\Exceptions\CouldNotSendNotification;
 
 class MailchimpChannel
 {
-    public function __construct(private Mailchimp $mailchimp)
+    public function __construct(private Mailchimp $mailchimp,  protected Dispatcher $events)
     {
     }
 
     /**
      * Send the given notification.
      *
-     * @param mixed $notifiable
-     * @param \Illuminate\Notifications\Notification $notification
+     * @param  mixed  $notifiable
+     * @param  \Illuminate\Notifications\Notification  $notification
      *
-     * @throws \NotificationChannels\Mailchimp\Exceptions\CouldNotSendNotification
+     * @return array|null
      */
     public function send(mixed $notifiable, Notification $notification): ?array
     {
@@ -29,16 +30,23 @@ class MailchimpChannel
             return null;
         }
 
-        $response = $this->mailchimp->sendMessage($message);
-
-        if($response instanceof ClientException){
-            throw CouldNotSendNotification::serviceRespondedWithAnError($response);
+        if(is_null($message->getTo())){
+            $to = $notifiable->routeNotificationFor('mailchimp', $notification);
+            $message->to($to['email'], $to['name']);
         }
 
-        if (isset($response[0]['status']) && $response[0]['status'] === 'rejected') {
-            throw CouldNotSendNotification::emailWasRejected($response);
-        }
+        try {
+            return $this->mailchimp->sendMessage($message);
+        } catch (Exception $exception){
+            $event = new NotificationFailed(
+                $notifiable,
+                $notification,
+                'mailchimp',
+                ['message' => $exception->getMessage(), 'exception' => $exception]
+            );
 
-        return $response;
+            $this->events->dispatch($event);
+        }
+        return null;
     }
 }
