@@ -2,15 +2,13 @@
 
 namespace NotificationChannels\Mailchimp;
 
-use Illuminate\Support\Arr;
 use NotificationChannels\Mailchimp\Data\Recipient;
 use NotificationChannels\Mailchimp\Data\Sender;
 
 class MailchimpMessage
 {
     private string $templateName;
-    private string $fromEmail;
-    private string $message;
+    private string $subject;
     private array $mergeTags = [];
     private Recipient $to;
     private Sender $from;
@@ -21,37 +19,26 @@ class MailchimpMessage
         return $this->templateName;
     }
 
-    public function useHandleBars(bool $useHandleBars = true): MailchimpMessage
-    {
-       $this->useHandleBars = $useHandleBars;
-       return $this;
-    }
-
     public function templateName(string $templateName): MailchimpMessage
     {
         $this->templateName = $templateName;
         return $this;
     }
 
-    public function getFromEmail(): string
+    public function getSubject(): string
     {
-        return $this->fromEmail;
+        return $this->subject;
     }
 
-    public function fromEmail(string $fromEmail): MailchimpMessage
+    public function subject(string $subject): MailchimpMessage
     {
-        $this->fromEmail = $fromEmail;
+        $this->subject = $subject;
         return $this;
     }
 
-    public function getMessage(): string
+    public function useHandleBars(bool $useHandleBars = true): MailchimpMessage
     {
-        return $this->message;
-    }
-
-    public function message(string $message): MailchimpMessage
-    {
-        $this->message = $message;
+        $this->useHandleBars = $useHandleBars;
         return $this;
     }
 
@@ -66,46 +53,47 @@ class MailchimpMessage
        return $this;
     }
 
-    public function addMergeTags(string $name, string $content): MailchimpMessage
+    public function addMergeTag(string $name, string $content): MailchimpMessage
     {
-        $this->mergeTags[] = ['name'=> $name, 'content'=>$content];
+        $this->mergeTags[$name] = $content;
 
         return $this;
     }
 
-
-
     public function getMessageBody(): array
     {
         $message = [
-            'to' => [ 'email'=> $this->getTo()],
-            'from_email' => $this->getFromEmail(),
-            'from_name' => $this->getFromName(),
-            'merge_vars' => [$this->getRecipientVars()]
+            'to' => [$this->to->toArray()],
+            'subject' => $this->getSubject(),
+            ...$this->from->toArray(),
         ];
 
-        if($this->useHandleBars){
-            $message['merge_language']= 'handlebars';
+        if (!empty($this->mergeTags)) {
+            $message['merge_vars'] = [$this->getRecipientVars()];
+        }
+
+        if ($this->useHandleBars) {
+            $message['merge_language'] = 'handlebars';
         }
 
         return [
             'template_name' => $this->getTemplateName(),
             'template_content' => [['name' => '', 'content' => '']],
-            'message' => $message
+            'message' => $message,
         ];
     }
 
-
     public function getRecipientVars(): array
     {
-        $vars = array_map(fn($key, $mergeTag):array =>
-                    ['name'=>$key, 'content'=>$mergeTag],
-            array_keys($this->getMergeTags()), $this->getMergeTags());
+        $vars = [];
+        foreach ($this->mergeTags as $name => $content) {
+            $vars[] = ['name' => $name, 'content' => $content];
+        }
 
-       return [
-           'rcpt'=>$this->getTo(),
-           'vars'=> $vars
-       ];
+        return [
+            'rcpt' => $this->to->getEmail(),
+            'vars' => $vars,
+        ];
     }
 
     /**
@@ -131,12 +119,10 @@ class MailchimpMessage
         return $this->from;
     }
 
-    /**
-     * @param  string  $email
-     * @param  string|null  $name
-     */
-    public function from( string $email, ?string $name): void
+    public function from(string $email, ?string $name = null): MailchimpMessage
     {
         $this->from = new Sender($email, $name);
+
+        return $this;
     }
 }

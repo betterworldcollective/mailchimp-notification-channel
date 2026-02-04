@@ -2,10 +2,16 @@
 
 namespace NotificationChannels\Mailchimp\Exceptions;
 
-class CouldNotSendNotification extends \Exception
+use Exception;
+
+class CouldNotSendNotification extends Exception
 {
-    public static function serviceRespondedWithAnError($response)
+    public static function serviceRespondedWithAnError(array $response): self
     {
-        return new static("Descriptive error message.");
+        $status = $response[0]['status'] ?? 'unknown';
+        $rejectReason = $response[0]['reject_reason'] ?? 'unknown';
+        $email = $response[0]['email'] ?? 'unknown';
+
+        return new static("Mailchimp responded with status '{$status}' for '{$email}': {$rejectReason}");
     }
 }

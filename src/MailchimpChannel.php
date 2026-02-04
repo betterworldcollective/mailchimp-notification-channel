@@ -2,14 +2,13 @@
 
 namespace NotificationChannels\Mailchimp;
 
-use NotificationChannels\Mailchimp\Exceptions\CouldNotSendNotification;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Mailchimp\Exceptions\CouldNotSendNotification;
 
 class MailchimpChannel
 {
     public function __construct(private Mailchimp $mailchimp)
     {
-        // Initialisation code here
     }
 
     /**
@@ -20,17 +19,21 @@ class MailchimpChannel
      *
      * @throws \NotificationChannels\Mailchimp\Exceptions\CouldNotSendNotification
      */
-    public function send($notifiable, Notification $notification)
+    public function send(mixed $notifiable, Notification $notification): ?array
     {
-        //$response = [a call to the api of your notification send]
-
-        /** @var \NotificationChannels\Mailchimp\MailchimpMessage $message */
+        /** @var MailchimpMessage $message */
         $message = $notification->toMailchimp($notifiable);
 
-        $response = $this->mailchimp->send($details);
+        if (!$message instanceof MailchimpMessage) {
+            return null;
+        }
 
-//        if ($response->error) { // replace this by the code need to check for errors
-//            throw CouldNotSendNotification::serviceRespondedWithAnError($response);
-//        }
+        $response = $this->mailchimp->sendMessage($message);
+
+        if (isset($response[0]['status']) && $response[0]['status'] === 'rejected') {
+            throw CouldNotSendNotification::serviceRespondedWithAnError($response);
+        }
+
+        return $response;
     }
 }
