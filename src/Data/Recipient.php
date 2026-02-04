@@ -2,12 +2,10 @@
 
 namespace NotificationChannels\Mailchimp\Data;
 
-use Illuminate\Contracts\Support\Arrayable;
-
 class Recipient
 {
 
-    public function __construct(private string $email, private ?string $name)
+    public function __construct(private string $email, private ?string $name, private ?string $type = 'to')
     {
 
     }
@@ -25,8 +23,14 @@ class Recipient
     public function toArray(): array
     {
         return array_filter(
-            ['email' => $this->email, 'name' => $this->name],
+            ['email' => $this->email, 'name' => $this->name, 'type' => $this->type],
             static fn ($value): bool => $value !== null
         );
+    }
+
+
+    public function getType(): ?string
+    {
+        return $this->type;
     }
 }
