@@ -3,31 +3,33 @@
 namespace NotificationChannels\Mailchimp;
 
 use Illuminate\Support\ServiceProvider;
+use MailchimpTransactional\ApiClient;
 
 class MailchimpServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+
+        $this->mergeConfigFrom(__DIR__.'/../config/mailchimp-notification-channel.php', 'mailchimp-notification-channel');
+
+        $this->publishes([
+            __DIR__.'/../config/mailchimp-notification-channel.php' => config_path('mailchimp-notification-channel.php'),
+        ]);
+    }
     /**
      * Bootstrap the application services.
      */
     public function boot()
     {
-        // Bootstrap code here.
 
-        /**
-         * Here's some example code we use for the pusher package.
-
-        $this->app->when(Channel::class)
-            ->needs(Pusher::class)
+        $this->app->when(MailchimpChannel::class)
+            ->needs(Mailchimp::class)
             ->give(function () {
-                $pusherConfig = config('broadcasting.connections.pusher');
 
-                return new Pusher(
-                    $pusherConfig['key'],
-                    $pusherConfig['secret'],
-                    $pusherConfig['app_id']
-                );
+                $apiClient = new ApiClient();
+                $apiClient->setApiKey(config('mailchimp-notification-channel.api_key'));
+                return new Mailchimp($apiClient);
             });
-         */
 
     }
 

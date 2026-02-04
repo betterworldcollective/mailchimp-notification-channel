@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notification;
 
 class MailchimpChannel
 {
-    public function __construct()
+    public function __construct(private Mailchimp $mailchimp)
     {
         // Initialisation code here
     }
@@ -23,6 +23,11 @@ class MailchimpChannel
     public function send($notifiable, Notification $notification)
     {
         //$response = [a call to the api of your notification send]
+
+        /** @var \NotificationChannels\Mailchimp\MailchimpMessage $message */
+        $message = $notification->toMailchimp($notifiable);
+
+        $response = $this->mailchimp->send($details);
 
 //        if ($response->error) { // replace this by the code need to check for errors
 //            throw CouldNotSendNotification::serviceRespondedWithAnError($response);
