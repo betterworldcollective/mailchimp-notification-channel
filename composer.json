@@ -3,9 +3,10 @@
     "description": "Custom Mailchimp Channel for Laravel Notification",
     "homepage": "https://github.com/betterworldcollective/mailchimp-notification-channel",
     "license": "MIT",
+    "version": "1.0.0",
     "authors": [
         {
-            "name": "Kristher Vidal",
+            "name": "Kristher Louis Vidal",
             "email": "kristher@betterworld.org",
             "homepage": "https://github.com/kristher1619",
             "role": "Developer"
@@ -37,5 +38,12 @@
     },
     "config": {
         "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "NotificationChannels\\Mailchimp\\MailchimpServiceProvider"
+            ]
+        }
     }
 }
